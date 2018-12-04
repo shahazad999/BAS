@@ -3,13 +3,7 @@ import ApplicationMenuName from 'terra-application-name/lib/ApplicationMenuName'
 import Image from 'terra-image';
 import img from './cerner.png';
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-  
-    };
-  }
+class Query extends Component {
 
   render() {
     const Header = <div style={{ border: '1px solid lightGray', backgroundColor: '#2481ca', width: '100%', height: '50px', position: 'relative' }} >
@@ -19,9 +13,10 @@ class App extends Component {
     return (
       <div>
        {Header}
+       {this.props.test}
       </div>
     );
   }
 }
 
-export default App;
+export default Query;
