@@ -56,6 +56,7 @@ class Main extends Component {
             { value: 'Key3', label: 'Key3' }
           ], selectedkey: null,contextName: '', 
           isRegisterPage: false,  isLoginPage: true, isQueryPage:  false, isInvokePage: false,
+          regAssociateID:'', regPassword: '', regRePassword: '', regDepartment:'', regContext: ''
         }
     };
 /*****************************
@@ -107,14 +108,14 @@ class Main extends Component {
         const loggedInHeader = <div style={{ border: '1px solid lightGray', backgroundColor: '#2481ca', width: '100%', height: '50px', position: 'relative' }} >
             <ApplicationMenuName title={<div style={{float: 'right'}}>
            
-           <Button text="Search Blockchain" variant="emphasis" icon={<IconSearch />} onClick={() => {
+           <Button text="Search" variant="emphasis" icon={<IconSearch />} onClick={() => {
                             this.setState({ isQueryPage: true, isInvokePage: false, isLoginPage:false, isRegisterPage: false})
-                        }}  />
+                        }}  style={{ margin: '1px', float: 'right', height:'45px' }} />
            
        
-       <Button text="Create Blockchain" variant="emphasis" icon={<IconAdd />}  onClick={() => {
+       <Button text="Create" variant="emphasis" icon={<IconAdd />}  onClick={() => {
                             this.setState({ isQueryPage: false, isInvokePage: true, isLoginPage:false, isRegisterPage: false})
-                        }}  />
+                        }} style={{ margin: '1px', float: 'right', height:'45px' }}  />
        
           </div>} accessory={<Image src={img} height="80px" width="80px" isFluid />} />
         </div>
@@ -153,20 +154,23 @@ class Main extends Component {
                 <Card.Body> 
                     <h1>REGISTER USER</h1> 
                     <ul>
-                        <Input type="text" placeholder ="AssociateID" value={this.state.username} onChange={this.handleChangeUsername} required  style={{ height: '35px', margin: '5px'}}/> 
+                        <Input type="text" placeholder ="AssociateID" value={this.state.regAssociateID} onChange={(e) => {this.setState({regAssociateID: e.target.value})}} required  style={{ height: '35px', margin: '5px'}}/> 
                     </ul>
                     <ul>
-                        <Input type="text" placeholder ="Password" value={this.state.password} onChange={this.handleChangePassword} required  style={{ height: '35px',  margin: '5px'}}/>
+                        <Input type="password" placeholder ="Password" value={this.state.regPassword} onChange={(e) => {this.setState({regPassword: e.target.value})}} required  style={{ height: '35px',  margin: '5px'}}/>
                     </ul>
                     <ul>
-                        <Input type="text" placeholder ="Department" value={this.state.password} onChange={this.handleChangePassword} required  style={{ height: '35px',  margin: '5px'}}/>
+                        <Input type="password" placeholder ="Re-Enter Password" value={this.state.regRePassword} onChange={(e) => {this.setState({regRePassword: e.target.value})}} required  style={{ height: '35px',  margin: '5px'}} />
                     </ul>
                     <ul>
-                        <Input type="text" placeholder ="Context" value={this.state.password} onChange={this.handleChangePassword} required  style={{ height: '35px',  margin: '5px'}}/>
+                        <Input type="text" placeholder ="Department" value={this.state.regDepartment} onChange={(e) => {this.setState({regDepartment: e.target.value})}} required  style={{ height: '35px',  margin: '5px'}}/>
+                    </ul>
+                    <ul>
+                        <Input type="text" placeholder ="Context" value={this.state.regContext} onChange={(e) => {this.setState({regContext: e.target.value})}} required  style={{ height: '35px',  margin: '5px'}}/>
                     </ul>
                     <div style={{ margin: 'auto', textAlign:'center'}}>
                          <Button  onClick={() => {
-                            this.setState({ isRegisterPage: true})
+                                this.setState({ isQueryPage: false, isInvokePage: false, isLoginPage: true, isRegisterPage: false})
                         }} text="Register" icon={<IconEdit />} variant="emphasis" style={{margin: '6px'}} />
                     </div>                    
                 </Card.Body>
@@ -297,12 +301,7 @@ class Main extends Component {
 
     
         const queryPageleft = <div>
-            <div style={{ height: '35px', width: '400px', margin: '5px'}}>
-          <Select
-        value={this.state.selectedContext}
-        onChange={(selectedContext) => { this.setState({ selectedContext})}}
-        options={this.state.context2}  />
-          </div>
+         
         <Input type="text" placeholder ="Hash" value={this.state.hash} onChange={(e) => { this.setState({ hash: e.target.value})}} required  style={{ height: '35px', width: '400px', margin: '5px'}}/> 
         
       
@@ -312,6 +311,13 @@ class Main extends Component {
             <DynamicGrid defaultTemplate={template}>
             <DynamicGrid.Region defaultPosition={region3}>
             {loggedInHeader}
+            
+            <div style={{ height: '35px', width: '400px', margin: 'auto'}}>
+          <Select 
+        value={this.state.selectedContext}
+        onChange={(selectedContext) => { this.setState({ selectedContext})}}
+        options={this.state.context2}  />
+          </div>
             </DynamicGrid.Region>
             <DynamicGrid.Region defaultPosition={region1}>
 
