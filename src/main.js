@@ -107,10 +107,14 @@ class Main extends Component {
         const loggedInHeader = <div style={{ border: '1px solid lightGray', backgroundColor: '#2481ca', width: '100%', height: '50px', position: 'relative' }} >
             <ApplicationMenuName title={<div style={{float: 'right'}}>
            
-           <Button text="Search Blockchain" variant="emphasis" icon={<IconSearch />} />
+           <Button text="Search Blockchain" variant="emphasis" icon={<IconSearch />} onClick={() => {
+                            this.setState({ isQueryPage: true, isInvokePage: false, isLoginPage:false, isRegisterPage: false})
+                        }}  />
            
        
-       <Button text="Create Blockchain" variant="emphasis" icon={<IconAdd />}  />
+       <Button text="Create Blockchain" variant="emphasis" icon={<IconAdd />}  onClick={() => {
+                            this.setState({ isQueryPage: false, isInvokePage: true, isLoginPage:false, isRegisterPage: false})
+                        }}  />
        
           </div>} accessory={<Image src={img} height="80px" width="80px" isFluid />} />
         </div>
@@ -131,9 +135,11 @@ class Main extends Component {
                         <Input type="password" placeholder ="Password" value={this.state.password} onChange={this.handleChangePassword} required  style={{ height: '35px',  margin: '5px'}}/>
                     </ul>
                     <div style={{ margin: 'auto', textAlign:'center'}}>
-                        <Button  onClick={this.handleSubmit} text="Login" icon = {<IconPadlock/>}variant="action" style={{margin: 'auto'}} />
                         <Button  onClick={() => {
-                            this.setState({ isRegisterPage: true})
+                             this.setState({ isQueryPage: false, isInvokePage: true, isLoginPage:false, isRegisterPage: false})
+                        }} text="Login" icon = {<IconPadlock/>}variant="action" style={{margin: 'auto'}} />
+                        <Button  onClick={() => {
+                             this.setState({ isQueryPage: false, isInvokePage: false, isLoginPage:false, isRegisterPage: true})
                         }} text="Register" icon={<IconEdit />} variant="emphasis" style={{margin: '6px'}} />
                     </div>                    
                 </Card.Body>
@@ -341,7 +347,7 @@ class Main extends Component {
         return(
             <div>
                 
-                {queryPage}
+                {result}
 
                 
                 
