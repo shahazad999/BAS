@@ -3,58 +3,58 @@ import Button from 'terra-button/lib/Button';
 import netConfig from './config';
 
 class Channel extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
-        this.state ={
+        this.state = {
             message: "", auth1: '', auth2: '', chaincodeName: 'mycc', channelName: 'mychannel'
 
         }
     }
-    registerUser1(){
+    registerUser1() {
         let config = {
             method: 'POST',
             headers: {
-              'content-Type': 'application/x-www-form-urlencoded'
-              
+                'content-Type': 'application/x-www-form-urlencoded'
+
             },
             body: 'username=Cerner&orgName=Org1'
-          }
-         
-      
-          fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/users', config)
-            .then(response =>  response.json() )
+        }
+
+
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/users', config)
+            .then(response => response.json())
             .then((response) => {
-                if (response.success === true){
-                    this.setState({ auth1: response.token})
-                        
-                          
-                    }
-                this.registerUser2();
+                if (response.success === true) {
+                    this.setState({ auth1: response.token })
+
+
                 }
+                this.registerUser2();
+            }
             );
     }
-    registerUser2(){
+    registerUser2() {
         let config = {
             method: 'POST',
             headers: {
-              'content-Type': 'application/x-www-form-urlencoded'
-              
+                'content-Type': 'application/x-www-form-urlencoded'
+
             },
             body: 'username=Cerner&orgName=Org2'
-          }
-         
-      
-          fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/users', config)
-            .then(response =>  response.json() )
+        }
+
+
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/users', config)
+            .then(response => response.json())
             .then((response) => {
-                if (response.success === true){
-                    this.setState({ auth2: response.token})
-                        
-                          
-                    }
-                this.craeteChannel();
+                if (response.success === true) {
+                    this.setState({ auth2: response.token })
+
 
                 }
+                this.craeteChannel();
+
+            }
             );
     }
     /*
@@ -84,178 +84,174 @@ class Channel extends Component {
 
     }*/
 
-    
-    craeteChannel (){
+
+    craeteChannel() {
         //crearte channel
         let config = {
             method: 'POST',
             headers: {
-              'authorization': 'Bearer '+this.state.auth1,
-              'content-Type': 'application/json'
-              
+                'authorization': 'Bearer ' + this.state.auth1,
+                'content-Type': 'application/json'
+
             },
-            body: '{ "channelName": "'+netConfig.channelName+'", "channelConfigPath":"../artifacts/channel/mychannel.tx" }'
-                
-                
-           
-          }
-         
-      
-          fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/channels', config)
-            .then(response =>  response.json() )
+            body: '{ "channelName": "' + netConfig.channelName + '", "channelConfigPath":"../artifacts/channel/mychannel.tx" }'
+
+
+
+        }
+
+
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels', config)
+            .then(response => response.json())
             .then((response) => {
-                if (response.success === true){
+                if (response.success === true) {
                     //join channel
                     let config = {
                         method: 'POST',
                         headers: {
-                          'authorization': 'Bearer '+this.state.auth1,
-                          'content-Type': 'application/json'
-                          
+                            'authorization': 'Bearer ' + this.state.auth1,
+                            'content-Type': 'application/json'
+
                         },
                         body: '{ "peers": ["peer0.org1.example.com","peer1.org1.example.com"] }'
-                      }
-                     
-                  
-                      fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/channels/'+netConfig.channelName+'/peers', config)
-                        .then(response =>  response.json() )
+                    }
+
+
+                    fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/peers', config)
+                        .then(response => response.json())
                         .then((response) => {
-                            if (response.success === true){
+                            if (response.success === true) {
                                 //Join Channel org 2
                                 let config = {
                                     method: 'POST',
                                     headers: {
-                                      'authorization': 'Bearer '+this.state.auth2,
-                                      'content-Type': 'application/json'
-                                      
+                                        'authorization': 'Bearer ' + this.state.auth2,
+                                        'content-Type': 'application/json'
+
                                     },
                                     body: '{ "peers": ["peer0.org2.example.com","peer1.org2.example.com"] }'
-                                  }
-                                 
-                              
-                                  fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/channels/'+netConfig.channelName+'/peers', config)
-                                    .then(response =>  response.json() )
+                                }
+
+
+                                fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/peers', config)
+                                    .then(response => response.json())
                                     .then((response) => {
-                                        
-                                        if (response.success === true){
+
+                                        if (response.success === true) {
                                             let config = {
                                                 method: 'POST',
                                                 headers: {
-                                                  'authorization': 'Bearer '+this.state.auth2,
-                                                  'content-Type': 'application/json'
-                                                  
+                                                    'authorization': 'Bearer ' + this.state.auth2,
+                                                    'content-Type': 'application/json'
+
                                                 },
-                                                body: '{ "peers": ["peer0.org2.example.com","peer1.org2.example.com"], "chaincodeName":"'+netConfig.chaincodeName+'", "chaincodePath":"github.com/medrecord","chaincodeType": "golang","chaincodeVersion":"v1" }'
-                                              }
-                                             
-                                          //install chaincode org1
-                                              fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/chaincodes', config)
-                                                .then(response =>  response.json() )
+                                                body: '{ "peers": ["peer0.org2.example.com","peer1.org2.example.com"], "chaincodeName":"' + netConfig.chaincodeName + '", "chaincodePath":"' + netConfig.chaincodePath + '","chaincodeType": "golang","chaincodeVersion":"v1" }'
+                                            }
+
+                                            //install chaincode org1
+                                            fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/chaincodes', config)
+                                                .then(response => response.json())
                                                 .then((response) => {
-                                                    if (response.success === true){
+                                                    if (response.success === true) {
                                                         let config = {
                                                             method: 'POST',
                                                             headers: {
-                                                              'authorization': 'Bearer '+this.state.auth1,
-                                                              'content-Type': 'application/json'
-                                                              
+                                                                'authorization': 'Bearer ' + this.state.auth1,
+                                                                'content-Type': 'application/json'
+
                                                             },
-                                                            body: '{ "peers": ["peer0.org1.example.com","peer1.org1.example.com"], "chaincodeName":"'+netConfig.chaincodeName+'", "chaincodePath":"github.com/medrecord","chaincodeType": "golang","chaincodeVersion":"v1" }'
-                                              }
-                                                         
-                                                            fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/chaincodes', config)
-                                                            .then(response =>  response.json() )
+                                                            body: '{ "peers": ["peer0.org1.example.com","peer1.org1.example.com"], "chaincodeName":"' + netConfig.chaincodeName + '", "chaincodePath":"' + netConfig.chaincodePath + '","chaincodeType": "golang","chaincodeVersion":"v1" }'
+                                                        }
+
+                                                        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/chaincodes', config)
+                                                            .then(response => response.json())
                                                             .then((response) => {
-                                                                if (response.success === true){
+                                                                if (response.success === true) {
                                                                     let config = {
                                                                         method: 'POST',
                                                                         headers: {
-                                                                          'authorization': 'Bearer '+this.state.auth1,
-                                                                          'content-Type': 'application/json'
-                                                                          
-                                                                        },
-                                                                        body: '{"chaincodeName": "'+netConfig.chaincodeName+'", "chaincodeVersion":"v1", "chaincodeType": "golang", "args":[""] }'
-                                                                            
+                                                                            'authorization': 'Bearer ' + this.state.auth1,
+                                                                            'content-Type': 'application/json'
 
-                                                                            
-                                                                           
-                        
-                                                                      }
-                                                                     
-                                                                  
-                                                                      fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/channels/'+netConfig.channelName+'/chaincodes', config)
-                                                                        .then(response =>  response.json() )
+                                                                        },
+                                                                        body: '{"chaincodeName": "' + netConfig.chaincodeName + '", "chaincodeVersion":"v1", "chaincodeType": "golang", "args":[""] }'
+
+                                                                    }
+
+
+                                                                    fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes', config)
+                                                                        .then(response => response.json())
                                                                         .then((response) => {
-                                                                            if (response.success === true){
-                                                                                this.setState({message: "Successfully instantiate chaingcode in organization Org1 to the channel 'mychannel'"})
-                                                                                this.setState({ message: response.message})
-                                                                                
-                                                                                
-                                                            
+                                                                            if (response.success === true) {
+                                                                                this.setState({ message: "Successfully instantiate chaingcode in organization Org1 to the channel 'mychannel'" })
+                                                                                this.setState({ message: response.message })
+
+
+
                                                                             }
-                                                                        
+
                                                                         });
-                                                                    
-                                                                    
-                                                
+
+
+
                                                                 }
                                                             });
-                                                        
-                                                        
-                                    
+
+
+
                                                     }
                                                 });
-                                            
-                                            
-                        
+
+
+
                                         }
                                     });
 
-                                
-            
+
+
                             }
                         });
-            
-                        
-                          
-                    }
+
+
 
                 }
+
+            }
             );
-          
+
     }
-    instantiate (){
+    instantiate() {
         let config = {
             method: 'POST',
             headers: {
-              'authorization': 'Bearer '+this.state.auth1,
-              'content-Type': 'application/json'
-              
+                'authorization': 'Bearer ' + this.state.auth1,
+                'content-Type': 'application/json'
+
             },
-            body: '{"chaincodeName": "'+netConfig.chaincodeName+'", "chaincodeVersion":"v1", "chaincodeType": "golang", "args":[] }'
-                
+            body: '{"chaincodeName": "' + netConfig.chaincodeName + '", "chaincodeVersion":"v1", "chaincodeType": "golang", "args":[] }'
 
-                
-               
 
-          }
-         
-      
-          fetch('http://localhost:4000' + '/chaincodes', config)
-            .then(response =>  response.json() )
+
+
+
+        }
+
+
+        fetch('http://localhost:4000' + '/chaincodes', config)
+            .then(response => response.json())
             .then((response) => {
-                if (response.success === true){
-                    this.setState({message: response.message})
-                    
-                    
+                if (response.success === true) {
+                    this.setState({ message: response.message })
+
+
 
                 }
             });
     }
-    
 
-    render(){
-        return(
+
+    render() {
+        return (
             this.registerUser1()
         );
     }
