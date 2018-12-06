@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Button from 'terra-button/lib/Button';
 import netConfig from './config';
 
-class Channel {
+class Channel extends Component {
     constructor(props){
         super(props);
         this.state ={
