@@ -14,6 +14,12 @@ import IconEdit from 'terra-icon/lib/icon/IconEdit';
 import IconPadlock from 'terra-icon/lib/icon/IconPadlock';
 import IconAdd from 'terra-icon/lib/icon/IconAdd';
 import IconSearch from 'terra-icon/lib/icon/IconSearch';
+import './App.css';
+import netConfig from './config';
+import InputField from 'terra-form-input/lib/InputField';
+
+
+import Channel from './createChannel';
 
 const template = {
     'grid-template-columns': '1fr 1fr 1fr 1fr',
@@ -45,8 +51,8 @@ class Main extends Component {
     constructor(props){
         super(props);
         this.state = { url: '', urlResponce: '', context: '', queryResponce: '',
-        inputData: '', jsonData:'', selectedAnswers: [], test: 'Long live the King', keyValue: '',
-        hash: '', selectedContext: null, context2: [
+        inputData: '', jsonData:'', selectedKeysForInvoke: [], test: 'Long live the King', keyValue: '',
+        hash: '', selectedContext: {value: 'abc',label: 'Context'}, context2: [
             { value: 'abc1', label: 'Contex1' },
             { value: 'abc2', label: 'Context2' },
             { value: 'abc3', label: 'Context3' }
@@ -54,9 +60,9 @@ class Main extends Component {
             { value: 'Key1', label: 'Key1' },
             { value: 'Key2', label: 'Key2' },
             { value: 'Key3', label: 'Key3' }
-          ], selectedkey: null,contextName: '', 
+          ], selectedkey: {},contextName: '', regRePasswordVerify: false,
           isRegisterPage: false,  isLoginPage: true, isQueryPage:  false, isInvokePage: false,
-          regAssociateID:'', regPassword: '', regRePassword: '', regDepartment:'', regContext: ''
+          regAssociateID:'', regPassword: '', regRePassword: '', regDepartment:'', regContext: '',  selectedKeysForInvoke: [],
         }
     };
 /*****************************
@@ -79,9 +85,9 @@ class Main extends Component {
     }
 
 /**
- * Fetch Blockchain Query Page
+ * Fetch User Details form Blockchain
  */
-    fetchBlockchain() {
+    onLoginClick() {
         let config ={
             method: 'GET',
             headers: {
@@ -90,18 +96,79 @@ class Main extends Component {
                 
             },
         }
-        fetch('http://localhost:4000' + '/channels/mychannel/chaincodes/bas2', config)
-        .then(response =>  response.json() )
-        .then((response) => this.setState({ 'queryResponce' : response }));
+        fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/channels/'+netConfig.channelName+'/chaincodes/'+netConfig.chaincodeName+'?peer='+netConfig.peerName+'&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22_rev%5C%22:%5C%22'+this.state.hash+'%5C%22,%5C%22payerId%5C%22:%5C%22'+this.state.username+'%5C%22%7D%7D%22%5D', config)
+            .then(response =>  response.json() )
+            .then(response => {
+                if (response.password === this.state.password) {
+                    Object.entries(response.keys).map(key =>{
+                        var contextObject = new Object();
+                        contextObject.value = key[1];
+                        contextObject.label = key[1];
+                        this.setState({ contextResponseKeys: contextObject})
+                    }) 
+                    this.setState({isInvokePage: true, isLoginPage: false,  contextResponseKeys: response.keys})
+                }
+            } )
+    }
+    
+
+/**
+ * Fetch Blockchain Query Page
+ */
+    fetchBlockchainHash() {
+        let config ={
+            method: 'GET',
+            headers: {
+                'authorization': 'Bearer '+this.state.auth,
+                'content-Type': 'application/json'
+                
+            },
+        }
+        fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/channels/'+netConfig.channelName+'/chaincodes/'+netConfig.chaincodeName+'?peer='+netConfig.peerName+'&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22_rev%5C%22:%5C%22'+this.state.hash+'%5C%22,%5C%22payerId%5C%22:%5C%22'+this.state.username+'%5C%22%7D%7D%22%5D', config)
+            .then(response =>  response.json() )
+            .then((response) => this.setState({ 'queryResponce' : response }));
+    }
+    fetchBlockchainCustom() {
+        let config ={
+            method: 'GET',
+            headers: {
+                'authorization': 'Bearer '+this.state.auth,
+                'content-Type': 'application/json'
+                
+            },
+        }
+        fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/channels/'+netConfig.channelName+'/chaincodes/'+netConfig.chaincodeName+'?peer='+netConfig.peerName+'&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22'+this.state.contextResponseKeysSelect.key+'%5C%22:%5C%22'+this.state.hash+'%5C%22,%5C%22payerId%5C%22:%5C%22'+this.state.username+'%5C%22%7D%7D%22%5D', config)
+            .then(response =>  response.json() )
+            .then((response) => this.setState({ 'queryResponce' : response }));
     }
     instantiate(){
         //create channel using context and install and instantiate chaincode
         //Refer craetechannel.js for now
- 
+        const {regDepartment , regAssociateID, regPassword, regContext, selectedKeysForInvoke} = this.state;
+        var j = ['"'+regDepartment +'"', '"'+ regAssociateID+'"', '"'+regPassword +'"', '"'+regContext +'"','"'+ selectedKeysForInvoke+'"'];
+
+       
+        let config = {
+          method: 'POST',
+          headers: {
+            'authorization': 'Bearer '+this.state.auth,
+            'content-Type': 'application/json'
+          },
+          body: '{ "peers": ["peer0.org1.example.com","peer0.org2.example.com"], "fcn":"initLedger", "args":['+j+']}'
+        }
+    
+        fetch('http://'+netConfig.hostIP+':'+netConfig.port+'' + '/channels/'+netConfig.channelName+'/chaincodes/'+netConfig.chaincodeName, config)
+          .then(response =>  response.json() )
+          .then(response => {
+                if (response.length === 0 && response[0] !== 'E') {
+                    
+                } else {
+                    alert("Failed")
+                }
+        } )
     } 
 
     render(){
-
         const Header = <div style={{ border: '1px solid lightGray', backgroundColor: '#2481ca', width: '100%', height: '50px', position: 'relative' }} >
             <ApplicationMenuName title="Blockchain-As-A-Service" accessory={<Image src={img} height="80px" width="80px" isFluid />} />
         </div>
@@ -113,7 +180,7 @@ class Main extends Component {
                         }}  style={{ margin: '1px', float: 'right', height:'45px' }} />
            
        
-       <Button text="Create" variant="emphasis" icon={<IconAdd />}  onClick={() => {
+       <Button text="Create New" variant="emphasis"   onClick={() => {
                             this.setState({ isQueryPage: false, isInvokePage: true, isLoginPage:false, isRegisterPage: false})
                         }} style={{ margin: '1px', float: 'right', height:'45px' }}  />
        
@@ -137,7 +204,7 @@ class Main extends Component {
                     </ul>
                     <div style={{ margin: 'auto', textAlign:'center'}}>
                         <Button  onClick={() => {
-                             this.setState({ isQueryPage: false, isInvokePage: true, isLoginPage:false, isRegisterPage: false})
+                             this.setState({ isQueryPage: true, isInvokePage: false, isLoginPage:false, isRegisterPage: false})
                         }} text="Login" icon = {<IconPadlock/>}variant="action" style={{margin: 'auto'}} />
                         <Button  onClick={() => {
                              this.setState({ isQueryPage: false, isInvokePage: false, isLoginPage:false, isRegisterPage: true})
@@ -160,23 +227,42 @@ class Main extends Component {
                         <Input type="password" placeholder ="Password" value={this.state.regPassword} onChange={(e) => {this.setState({regPassword: e.target.value})}} required  style={{ height: '35px',  margin: '5px'}}/>
                     </ul>
                     <ul>
-                        <Input type="password" placeholder ="Re-Enter Password" value={this.state.regRePassword} onChange={(e) => {this.setState({regRePassword: e.target.value})}} required  style={{ height: '35px',  margin: '5px'}} />
+                        <Input type="password" placeholder ="Re-Enter Password" value={this.state.regRePassword} onChange={(e) => {
+                            
+                            this.setState({regRePassword: e.target.value})
+        
+                            }}  isInvalid = {this.state.regRePasswordVerify} error = "Passowrds did not Match" style={{ height: '35px',  margin: '5px'}} />
                     </ul>
                     <ul>
-                        <Input type="text" placeholder ="Department" value={this.state.regDepartment} onChange={(e) => {this.setState({regDepartment: e.target.value})}} required  style={{ height: '35px',  margin: '5px'}}/>
+                        <Input type="text" placeholder ="Department" value={this.state.regDepartment} onChange={(e) => {this.setState({regDepartment: e.target.value})}}  style={{ height: '35px',  margin: '5px'}}/>
                     </ul>
                     <ul>
                         <Input type="text" placeholder ="Context" value={this.state.regContext} onChange={(e) => {this.setState({regContext: e.target.value})}} required  style={{ height: '35px',  margin: '5px'}}/>
                     </ul>
                     <div style={{ margin: 'auto', textAlign:'center'}}>
-                         <Button  onClick={() => {
-                                this.setState({ isQueryPage: false, isInvokePage: false, isLoginPage: true, isRegisterPage: false})
+                        <Button  onClick={() => {
+                            const {regAssociateID, regContext, regDepartment, regPassword} = this.state;
+                            if( regAssociateID.length >0 && regContext.length >0 && regDepartment.length> 0 && regPassword.length>0){
+                                if (this.state.regPassword === this.state.regRePassword){
+                                    this.setState({ isQueryPage: false, isInvokePage: true, isLoginPage: false, isRegisterPage: false})
+                                }else {
+                                    alert("Passwords did not match")
+                                }
+                            } else {
+                                alert("Please fill in all the feilds")
+                            }
+                                
                         }} text="Register" icon={<IconEdit />} variant="emphasis" style={{margin: '6px'}} />
                     </div>                    
                 </Card.Body>
             </Card>
-       </div>
-       </div>
+        </div>
+        </div>
+
+        const navPage = <div>
+            {Header}
+
+        </div>
 
         const mainpage1 = <div>
 
@@ -202,9 +288,8 @@ class Main extends Component {
                     
                     }} text="Get" variant="action" style={{ margin: '5px'}} />
             </ul>
-           
-              
         </div>
+
         // JSon key selection checkbox
         const checkBoxSelection = Object.entries(this.state.jsonData).map(key => 
             <div >  
@@ -215,13 +300,13 @@ class Main extends Component {
                             var jsonArg1 = new Object();
                          
                             jsonArg1 = key[0];
-                            const { selectedAnswers } = this.state;
+                            const { selectedKeysForInvoke } = this.state;
                             if (e.currentTarget.checked) {
-                              selectedAnswers.push(jsonArg1);
+                              selectedKeysForInvoke.push(jsonArg1);
                             } else if (!e.currentTarget.checked) {
-                              selectedAnswers.splice(selectedAnswers.values(jsonArg1), 1);                       
+                              selectedKeysForInvoke.splice(selectedKeysForInvoke.values(jsonArg1), 1);                       
                             }
-                            this.setState({ selectedAnswers });  
+                            this.setState({ selectedKeysForInvoke });  
                             }} />
                     </div>
                   </React.Fragment>
@@ -246,8 +331,9 @@ class Main extends Component {
 
             <div style={{ margin: 'auto' ,justifyContent: 'center'}}>
             {checkBoxSelection}
+            
             <ul>
-                <Input type="text" placeholder ="Context" value={this.state.contextName} onChange={(e) => { this.setState({ contextName: e.target.value})}} required  style={{ height: '35px', width: '400px', margin: '5px'}}/> 
+                <Input type="text" placeholder ="Context" value={this.state.regContext} onChange={(e) => { this.setState({ regContext: e.target.value})}} required  style={{ height: '35px', width: '400px', margin: '5px'}}/> 
             </ul>
             <Button color="success" size="lg" onClick={() => { this.instantiate()}} text="submit" variant="action"  />
             </div>
@@ -282,7 +368,12 @@ class Main extends Component {
             }
             }       
             } required  style={{ height: '35px', width: '400px', margin: '5px'}}/> 
-       
+            <ul>
+                
+            <Button color="success" size="lg" onClick={() => { this.queryBlockchain()}} text="Search" variant="action"  style ={{margin: 'auto', float: 'right', position: 'relative'}}/>
+      
+            </ul>
+            
     
   
         </div>
@@ -301,28 +392,31 @@ class Main extends Component {
 
     
         const queryPageleft = <div>
-         
         <Input type="text" placeholder ="Hash" value={this.state.hash} onChange={(e) => { this.setState({ hash: e.target.value})}} required  style={{ height: '35px', width: '400px', margin: '5px'}}/> 
-        
-      
+        </div>
+        const viewQueriedData = <div>
+            {}
         </div>
 
         const queryPage = <div >
             <DynamicGrid defaultTemplate={template}>
             <DynamicGrid.Region defaultPosition={region3}>
             {loggedInHeader}
-            
-            <div style={{ height: '35px', width: '400px', margin: 'auto'}}>
-          <Select 
-        value={this.state.selectedContext}
-        onChange={(selectedContext) => { this.setState({ selectedContext})}}
-        options={this.state.context2}  />
-          </div>
+            <ul>            
+            <div style={{ height: '35px', width: '400px', margin: 'auto', }}>
+            <Select 
+                value={this.state.selectedContext}
+                onChange={(selectedContext) => { this.setState({ selectedContext})}}
+                options={this.state.context2}  />
+            </div>
+            </ul>
             </DynamicGrid.Region>
             <DynamicGrid.Region defaultPosition={region1}>
-
             {queryPageleft}
-            
+            <ul>
+            <Button color="success" size="lg" onClick={() => { this.queryBlockchain()}} text="Search" variant="action"  style ={{margin: 'auto', float: 'right', position: 'relative'}}/>
+      
+            </ul>
             </DynamicGrid.Region>
             <DynamicGrid.Region defaultPosition={region2}>
             {queryPageSelectkey}
@@ -331,10 +425,7 @@ class Main extends Component {
             </DynamicGrid.Region>
             <DynamicGrid.Region defaultPosition={region4}>
           
-            <ul>
-            <Button color="success" size="lg" onClick={() => { this.queryBlockchain()}} text="submit" variant="action"  style ={{margin: 'auto', float: 'right', position: 'relative'}}/>
-      
-            </ul>
+            {viewQueriedData}
           
             </DynamicGrid.Region>
         </DynamicGrid>
@@ -351,13 +442,9 @@ class Main extends Component {
             result = invokePage
         }
         return(
-            <div>
-                
+            <div className="Animation-enter.Animation-enter-active">
                 {result}
-
-                
-                
-             </div>
+            </div>
             
         );
     }

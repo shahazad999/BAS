@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Button from 'terra-button/lib/Button';
 import netConfig from './config';
 
-class Channel extends Component {
+class Channel {
     constructor(props){
         super(props);
         this.state ={
@@ -252,143 +252,19 @@ class Channel extends Component {
                 }
             });
     }
-    /*
-    joinchannel() {
-        let config = {
-            method: 'POST',
-            headers: {
-              'authorization': 'Bearer '+this.state.auth1,
-              'content-Type': 'application/json'
-              
-            },
-            body: {
-                "peers": ["peer0.org1.example.com","peer1.org1.example.com"]
-            }
-          }
-         
-      
-          fetch('http://localhost:4000' + '/channels/'+netConfig.channelName+'/peers', config)
-            .then(response =>  response.json() )
-            .then((response) => {
-                if (response.success === true){
-                    //Join Channel org 2
-                    let config = {
-                        method: 'POST',
-                        headers: {
-                          'authorization': 'Bearer '+this.state.auth2,
-                          'content-Type': 'application/json'
-                          
-                        },
-                        body: {
-                            "peers": ["peer0.org2.example.com","peer1.org2.example.com"]
-                        }
-                      }
-                     
-                  
-                      fetch('http://localhost:4000' + '/channels/'+netConfig.channelName+'/peers', config)
-                        .then(response =>  response.json() )
-                        .then((response) => {
-                            if (response.success === true){
-                                installChaincode()
-                                
-                                
-            
-                            }
-                        });
-                    
-
-                }
-            });
-
-    }
-    installChaincode(){
-        let config = {
-            method: 'POST',
-            headers: {
-              'authorization': 'Bearer '+this.state.auth2,
-              'content-Type': 'application/json'
-              
-            },
-            body: {
-                "peers": ["peer0.org2.example.com","peer1.org2.example.com"],
-                "chaincodeName": netConfig.chaincodeName,
-                "chaincodePath":"github.com/chaincode",
-                "chaincodeType": "golang",
-                "chaincodeVersion":"v1"
-            }
-          }
-         
-      
-          fetch('http://localhost:4000' + '/chaincodes', config)
-            .then(response =>  response.json() )
-            .then((response) => {
-                if (response.success === true){
-                    let config = {
-                        method: 'POST',
-                        headers: {
-                          'authorization': 'Bearer '+this.state.auth1,
-                          'content-Type': 'application/json'
-                          
-                        },
-                        body: {
-                            "peers": ["peer0.org1.example.com","peer1.org1.example.com"],
-                            "chaincodeName": netConfig.chaincodeName,
-                            "chaincodePath":"github.com/chaincode",
-                            "chaincodeType": "golang",
-                            "chaincodeVersion":"v1"
-                        }
-                      }
-                     
-                  
-                      fetch('http://localhost:4000' + '/chaincodes', config)
-                        .then(response =>  response.json() )
-                        .then((response) => {
-                            if (response.success === true){
-                                instantiateChaincode()
-                                
-                                
-            
-                            }
-                        });
-                    
-                    
-
-                }
-            });
-
-    }
-    instantiateChaincode(){
-        let config = {
-            method: 'POST',
-            headers: {
-              'authorization': 'Bearer '+this.state.auth1,
-              'content-Type': 'application/json'
-              
-            },
-            body: {
-                "chaincodeName": netConfig.chaincodeName,
-                "chaincodeVersion":"v1",
-                "chaincodeType": "golang",
-                "args":[""]
-            }
-          }
-         
-      
-          fetch('http://localhost:4000' + '/chaincodes', config)
-            .then(response =>  response.json() )
-            .then((response) => {
-                if (response.success === true){
-                    this.setState({message: response.message})
-                    
-                    
-
-                }
-            });
-
-    }*/
+    
 
     render(){
         return(
+            this.registerUser1()
+        );
+    }
+}
+
+export default Channel;
+
+/**
+ *         return(
             <div>
                      <Button color="success" size="lg" onClick={() => { this.registerUser1()}} text="CreateChannel" variant="action" style={{ margin: '5px'}} />
            <ul>
@@ -406,7 +282,4 @@ class Channel extends Component {
             </ul>  
             </div>
         );
-    }
-}
-
-export default Channel;
+ */

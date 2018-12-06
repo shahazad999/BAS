@@ -30,3 +30,13 @@
     transform: rotate(360deg);
   }
 }
+
+.Animation-enter {
+  opacity: 0.01;
+  width: 0px;
+}
+.Animation-enter.Animation-enter-active {
+  opacity: 1;
+  width: 100px;
+  transition: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+}
