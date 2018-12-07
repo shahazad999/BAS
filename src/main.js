@@ -45,7 +45,7 @@ const region3 = {
 };
 const region4 = {
     'grid-column-start': 2,
-    'grid-column-end': 3,
+    'grid-column-end': 4,
     'grid-row-start': 3,
 }
 
@@ -54,7 +54,7 @@ class Main extends Component {
         super(props);
         this.state = {
             message: "", auth1: '', auth2: '', chaincodeName: 'mycc', channelName: 'mychannel',
-            url: '', urlResponce: '', context: '', queryResponce: {}, associateID: "", password: "",
+            url: '', urlResponce: '', context: '', queryResponce: {"Record": ""}, associateID: "", password: "",
             inputData: '', jsonData: '', selectedKeysForInvoke: [], test: 'Long live the King', keyValue: '',
             hash: '', selectedContext: { value: 'abc', label: 'Context' }, contextNameRecived: [
                 { value: 'abc1', label: 'Contex1' },
@@ -107,17 +107,6 @@ class Main extends Component {
             .then(response => {
                 if (response.Record.password === this.state.password) 
                 {
-/*                     Object.entries(response.keys).map(key => {
-                        var contextKeysObject = new Object();
-                        
-                        contextKeysObject.value = key[1];
-                        contextKeysObject.label = key[1];
-                        const x = [];
-                        x.push(contextKeysObject);
-                        this.setState({ contextResponseKeysSelect: x ,  isInvokePage: false, isLoginPage: false, isQueryPage: true,isRegisterPage: false })
-                        
-
-                    }) */
                     const  contextResponseKeys  = response.Record.keys;
                     const contextName = response.Record.contextName;
                     const result = new Array(contextResponseKeys.length);
@@ -133,12 +122,6 @@ class Main extends Component {
                     }
 
 
-/*                     Object.entries(response.Record.contextName).map(key => {
-                        var contextNamesObject =new Object()
-                        contextNamesObject.value = key[1];
-                        contextNamesObject.label = key[1];
-                        this.setState({ selectedContext: contextNamesObject, isInvokePage: false, isLoginPage: false, isQueryPage: true,isRegisterPage: false })
-                    }) */
 
                 }else {
                     return alert("Invalid Password")
@@ -172,7 +155,7 @@ class Main extends Component {
 
             },
         }
-        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22' + this.state.contextResponseKeysSelect.value + '%5C%22:%5C%22' + this.state.keyValue + '%5C%22,%5C%22payerId%5C%22:%5C%22' + this.state.username + '%5C%22%7D%7D%22%5D', config)
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22' + this.state.selectedkey.value + '%5C%22:%5C%22' + this.state.keyValue + '%5C%22%7D%7D%22%5D', config)
             .then(response => response.json())
             .then((response) => this.setState({ 'queryResponce': response }));
     }
@@ -329,7 +312,7 @@ class Main extends Component {
         fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes', config)
             .then(response => response.json())
             .then((response) => {
-                if (response.success === true) {
+                {
                     this.inItLedger();
                 }
             });
@@ -486,7 +469,7 @@ class Main extends Component {
 
         const mainpage2 = <div>
             <ul>
-                <Textarea size="full" type="json" placeholder="Data in JSON format" value={(this.state.inputData)} onChange={(e) => { this.setState({ inputData: e.target.value }) }} style={{ height: '200px', width: '400px', margin: '5px' }} />
+                <Textarea size="full" type="json" placeholder="Data in JSON format" value={(this.state.inputData)} onChange={(e) => { this.setState({ inputData: e.target.value }) }} style={{ height: '35px', width: '400px', margin: '5px' }} />
                 <Button color="success" size="lg" onClick={() => {
                     try {
                         JSON.parse(this.state.inputData)
@@ -521,14 +504,7 @@ class Main extends Component {
             </div>
         )
         const { regDepartment, regAssociateID, regPassword, regContext, selectedKeysForInvoke } = this.state;
-        var j = ['"' + regDepartment + '"', '"' + regAssociateID + '"', '"' + regPassword + '"', '"' + regContext + '"', '"' + selectedKeysForInvoke + '"'];
-        var initObject = new Object();
-        initObject.departmentName = regDepartment;
-        initObject.associateID = regAssociateID;
-        initObject.password= regPassword;
-        initObject.contextName = regContext;
-        initObject.keys= selectedKeysForInvoke;
-         var x = JSON.stringify(JSON.stringify(initObject))
+
         //Main Invoke Page
         const invokePage = <div>
             <DynamicGrid defaultTemplate={template}>
@@ -546,10 +522,14 @@ class Main extends Component {
                     <div style={{ margin: 'auto', justifyContent: 'center' }}>
                         {checkBoxSelection}
                         <ul>
-                            <Input type="text" placeholder="Context" value={this.state.regContext} onChange={(e) => { this.setState({ regContext: e.target.value }) }} required style={{ height: '35px', width: '400px', margin: '5px' }} />
+                        CONTEXT: <Input type="text" placeholder="Context" value={this.state.regContext} onChange={(e) => { this.setState({ regContext: e.target.value }) }} required style={{ height: '35px', width: '400px', margin: '5px' }} />
+                        
                         </ul>
-                        {x}
-                        <Button color="success" size="lg" onClick={() => { this.registerUser1() }} text="submit" variant="action" />
+                        
+                        <div style={{ margin: 'auto', textAlign:'center'}}>
+                        <Button color="success" size="lg" onClick={() => { this.registerUser1() }} text="Create" variant="action" style={{margin: '10px'}}/>
+                        <Button color="success" size="lg" onClick={() => { this.inItLedger() }} text="submit" variant="action" style={{margin: '10px'}} />
+                        </div>
                     </div>
                 </DynamicGrid.Region>
             </DynamicGrid>
@@ -606,7 +586,8 @@ class Main extends Component {
         /**
          * View the querid Data
          */
-        const viewQueriedData = Object.entries(this.state.queryResponce).map(key => <div>
+        const {queryResponce} =this.state
+        const viewQueriedData = Object.entries(queryResponce.Record).map(key => <div>
                 <Table isStriped={false}>
                 <Table.Header>
                     <Table.HeaderCell content="Key" key="NAME" minWidth="small" />
@@ -663,7 +644,7 @@ class Main extends Component {
         }
         return (
             <div className="Animation-enter.Animation-enter-active">
-                {result}
+                {invokePage}
                 
             </div>
 
