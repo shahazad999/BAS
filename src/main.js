@@ -21,6 +21,7 @@ import Table from 'terra-table';
 
 
 import Channel from './createChannel';
+import { relative } from 'path';
 
 const template = {
     'grid-template-columns': '1fr 1fr 1fr 1fr',
@@ -52,7 +53,8 @@ class Main extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            url: '', urlResponce: '', context: '', queryResponce: {"key1": "value1", "key2": "value2"}, associateID: "", password: "",
+            message: "", auth1: '', auth2: '', chaincodeName: 'mycc', channelName: 'mychannel',
+            url: '', urlResponce: '', context: '', queryResponce: {}, associateID: "", password: "",
             inputData: '', jsonData: '', selectedKeysForInvoke: [], test: 'Long live the King', keyValue: '',
             hash: '', selectedContext: { value: 'abc', label: 'Context' }, contextNameRecived: [
                 { value: 'abc1', label: 'Contex1' },
@@ -100,10 +102,10 @@ class Main extends Component {
 
             },
         }
-        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22username%5C%22:%5C%22' +associateID+ '%5C%22%7D%7D%22%5D', config)
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22associateID%5C%22:%5C%22' +associateID+ '%5C%22%7D%7D%22%5D', config)
             .then(response => response.json())
             .then(response => {
-                //if (response.password === this.state.password) 
+                if (response.Record.password === this.state.password) 
                 {
 /*                     Object.entries(response.keys).map(key => {
                         var contextKeysObject = new Object();
@@ -116,23 +118,30 @@ class Main extends Component {
                         
 
                     }) */
-                    const  contextResponseKeys  = response.keys;
+                    const  contextResponseKeys  = response.Record.keys;
+                    const contextName = response.Record.contextName;
                     const result = new Array(contextResponseKeys.length);
                     for (var i= 0; i <result.length; i++){
                         result[i]= {
                             value: contextResponseKeys[i],
                             label: contextResponseKeys[i]
                         }
-                        this.setState({ contextResponseKeysSelect: result ,  isInvokePage: false, isLoginPage: false, isQueryPage: true,isRegisterPage: false })
+                        var contextNamesObject =new Object()
+                        contextNamesObject.value = contextName;
+                        contextNamesObject.label = contextName;
+                        this.setState({selectedContext: contextNamesObject, contextResponseKeysSelect: result ,  isInvokePage: false, isLoginPage: false, isQueryPage: true,isRegisterPage: false })
                     }
 
-                    Object.entries(response.contexts).map(key => {
+
+/*                     Object.entries(response.Record.contextName).map(key => {
                         var contextNamesObject =new Object()
                         contextNamesObject.value = key[1];
                         contextNamesObject.label = key[1];
                         this.setState({ selectedContext: contextNamesObject, isInvokePage: false, isLoginPage: false, isQueryPage: true,isRegisterPage: false })
-                    })
+                    }) */
 
+                }else {
+                    return alert("Invalid Password")
                 }
             })
     }
@@ -167,20 +176,183 @@ class Main extends Component {
             .then(response => response.json())
             .then((response) => this.setState({ 'queryResponce': response }));
     }
+
+    registerUser1() {
+        let config = {
+            method: 'POST',
+            headers: {
+                'content-Type': 'application/x-www-form-urlencoded'
+
+            },
+            body: 'username=Cerner&orgName=Org1'
+        }
+
+
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/users', config)
+            .then(response => response.json())
+            .then((response) => {
+                if (response.success === true) {
+                    this.setState({ auth1: response.token })
+                }
+                this.registerUser2();
+            }
+            );
+    }
+    registerUser2() {
+        let config = {
+            method: 'POST',
+            headers: {
+                'content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'username=Cerner&orgName=Org2'
+        }
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/users', config)
+            .then(response => response.json())
+            .then((response) => {
+                if (response.success === true) {
+                    this.setState({ auth2: response.token })
+
+
+                }
+                this.craeteChannel();
+
+            }
+            );
+    }
+    craeteChannel() {
+        //crearte channel
+        let config = {
+            method: 'POST',
+            headers: {
+                'authorization': 'Bearer ' + this.state.auth1,
+                'content-Type': 'application/json'
+            },
+            body: '{ "channelName": "' + netConfig.channelName + '", "channelConfigPath":"../artifacts/channel/mychannel.tx" }'
+        }
+
+
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels', config)
+            .then(response => response.json())
+            .then((response) => {
+                if (response.success === true) {
+                    //join channel
+                    this.joinChannel();
+
+                }
+            });
+    }
+    joinChannel(){
+        let config = {
+            method: 'POST',
+            headers: {
+                'authorization': 'Bearer ' + this.state.auth1,
+                'content-Type': 'application/json'
+            },
+            body: '{ "peers": ["peer0.org1.example.com","peer1.org1.example.com"] }'
+        }
+
+
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/peers', config)
+            .then(response => response.json())
+            .then((response) => {
+                if (response.success === true) {
+                    //Join Channel org 2
+                    let config = {
+                        method: 'POST',
+                        headers: {
+                            'authorization': 'Bearer ' + this.state.auth2,
+                            'content-Type': 'application/json'
+                        },
+                        body: '{ "peers": ["peer0.org2.example.com","peer1.org2.example.com"] }'
+                    }
+                    fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/peers', config)
+                        .then(response => response.json())
+                        .then((response) => {
+
+                            if (response.success === true) {
+                                //Install Chaincode
+                                this.installChaincode();
+                                
+                            }else {
+                                this.joinChannel();
+                            }
+                        });
+                }
+            });
+    }
+    installChaincode() {
+        let config = {
+            method: 'POST',
+            headers: {
+                'authorization': 'Bearer ' + this.state.auth2,
+                'content-Type': 'application/json'
+
+            },
+            body: '{ "peers": ["peer0.org2.example.com","peer1.org2.example.com"], "chaincodeName":"' + netConfig.chaincodeName + '", "chaincodePath":"' + netConfig.chaincodePath + '","chaincodeType": "golang","chaincodeVersion":"v1" }'
+        }
+        //install chaincode org1
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/chaincodes', config)
+            .then(response => response.json())
+            .then((response) => {
+                if (response.success === true) {
+                    let config = {
+                        method: 'POST',
+                        headers: {
+                            'authorization': 'Bearer ' + this.state.auth1,
+                            'content-Type': 'application/json'
+
+                        },
+                        body: '{ "peers": ["peer0.org1.example.com","peer1.org1.example.com"], "chaincodeName":"' + netConfig.chaincodeName + '", "chaincodePath":"' + netConfig.chaincodePath + '","chaincodeType": "golang","chaincodeVersion":"v1" }'
+                    }
+
+                    fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/chaincodes', config)
+                        .then(response => response.json())
+                        .then((response) => {
+                            if (response.success === true) {
+                                //Instantiate
+                            
+                                this.instantiate();
+                            }
+                        });
+                }
+            });
+    }
     instantiate() {
+        let config = {
+            method: 'POST',
+            headers: {
+                'authorization': 'Bearer ' + this.state.auth1,
+                'content-Type': 'application/json'
+            },
+            body: '{"chaincodeName": "' + netConfig.chaincodeName + '", "chaincodeVersion":"v1", "chaincodeType": "golang", "args":[""] }'
+        }
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes', config)
+            .then(response => response.json())
+            .then((response) => {
+                if (response.success === true) {
+                    this.inItLedger();
+                }
+            });
+    }
+    inItLedger() {
         //create channel using context and install and instantiate chaincode
         //Refer craetechannel.js for now
         const { regDepartment, regAssociateID, regPassword, regContext, selectedKeysForInvoke } = this.state;
         var j = ['"' + regDepartment + '"', '"' + regAssociateID + '"', '"' + regPassword + '"', '"' + regContext + '"', '"' + selectedKeysForInvoke + '"'];
-
-
+        var initObject = new Object();
+        initObject.departmentName = regDepartment;
+        initObject.associateID = regAssociateID;
+        initObject.password= regPassword;
+        initObject.contextName = regContext;
+        initObject.keys= selectedKeysForInvoke;
+        var x = JSON.stringify(JSON.stringify(initObject))
         let config = {
             method: 'POST',
             headers: {
                 'authorization': 'Bearer ' + netConfig.authToken,
                 'content-Type': 'application/json'
             },
-            body: '{ "peers": ["peer0.org1.example.com","peer0.org2.example.com"], "fcn":"initLedger", "args":[' + j + ']}'
+            body: '{ "peers": ["peer0.org1.example.com","peer0.org2.example.com"], "fcn":"initLedger", "args":[' + x + ']}'
         }
 
         fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName, config)
@@ -199,18 +371,21 @@ class Main extends Component {
             <ApplicationMenuName title="Blockchain-As-A-Service" accessory={<Image src={img} height="80px" width="80px" isFluid />} />
         </div>
         const loggedInHeader = <div style={{ border: '1px solid lightGray', backgroundColor: '#2481ca', width: '100%', height: '50px', position: 'relative' }} >
-            <ApplicationMenuName title={<div style={{ float: 'right' }}>
 
-                <Button text="Search" variant="emphasis" icon={<IconSearch />} onClick={() => {
+            <Image src={img} height="100px" width="100px" isFluid style={{margin: '12px', float: 'left'}}/>
+            
+            <Button text="Search" variant="emphasis" icon={<IconSearch />} onClick={() => {
                     this.setState({ isQueryPage: true, isInvokePage: false, isLoginPage: false, isRegisterPage: false })
-                }} style={{ margin: '1px', float: 'right', height: '45px' }} />
+                }} style={{ margin: '1px', float: 'left', height: '45px' }} />
 
 
                 <Button text="Create New" variant="emphasis" onClick={() => {
                     this.setState({ isQueryPage: false, isInvokePage: true, isLoginPage: false, isRegisterPage: false })
-                }} style={{ margin: '1px', float: 'right', height: '45px' }} />
+                }} style={{ margin: '1px', float: 'left', height: '45px' , position: 'relative'}} />
 
-            </div>} accessory={<Image src={img} height="80px" width="80px" isFluid />} />
+                <Button text="Log-Out" variant="emphasis" onClick={() => {
+                    this.setState({ isQueryPage: false, isInvokePage: false, isLoginPage: true, isRegisterPage: false })
+                }} style={{ margin: '1px', float: 'right', height: '45px' , position: 'relative'}} />
         </div>
         const loginPage =
             <div>
@@ -299,19 +474,16 @@ class Main extends Component {
                                 }
                             }} text="Register" icon={<IconEdit />} variant="emphasis" style={{ margin: '6px' }} />
                             {JSON.stringify(this.state.testing)}
-                        
-
-
         </div>
 
         const mainpage1 = <div>
-
             <ul>
                 <Input type="text" placeholder="URL" value={this.state.url} onChange={(e) => { this.setState({ url: e.target.value }) }} required style={{ height: '35px', width: '400px', margin: '5px' }} />
                 <Button color="success" size="lg" onClick={() => { this.fetchURL() }} text="Get" variant="action" style={{ margin: '5px' }} />
             </ul>
 
         </div>
+
         const mainpage2 = <div>
             <ul>
                 <Textarea size="full" type="json" placeholder="Data in JSON format" value={(this.state.inputData)} onChange={(e) => { this.setState({ inputData: e.target.value }) }} style={{ height: '200px', width: '400px', margin: '5px' }} />
@@ -328,7 +500,7 @@ class Main extends Component {
 
         // JSon key selection checkbox
         const checkBoxSelection = Object.entries(this.state.jsonData).map(key =>
-            <div >
+            <div>
                 <React.Fragment key={key}>
                     <div >
                         <Checkbox id="Data" name="filter" disabled={this.state.view} labelText={key[0]} onChange={(e) => {
@@ -350,7 +522,13 @@ class Main extends Component {
         )
         const { regDepartment, regAssociateID, regPassword, regContext, selectedKeysForInvoke } = this.state;
         var j = ['"' + regDepartment + '"', '"' + regAssociateID + '"', '"' + regPassword + '"', '"' + regContext + '"', '"' + selectedKeysForInvoke + '"'];
-        var x = JSON.stringify(j)
+        var initObject = new Object();
+        initObject.departmentName = regDepartment;
+        initObject.associateID = regAssociateID;
+        initObject.password= regPassword;
+        initObject.contextName = regContext;
+        initObject.keys= selectedKeysForInvoke;
+         var x = JSON.stringify(JSON.stringify(initObject))
         //Main Invoke Page
         const invokePage = <div>
             <DynamicGrid defaultTemplate={template}>
@@ -371,7 +549,7 @@ class Main extends Component {
                             <Input type="text" placeholder="Context" value={this.state.regContext} onChange={(e) => { this.setState({ regContext: e.target.value }) }} required style={{ height: '35px', width: '400px', margin: '5px' }} />
                         </ul>
                         {x}
-                        <Button color="success" size="lg" onClick={() => { this.instantiate() }} text="submit" variant="action" />
+                        <Button color="success" size="lg" onClick={() => { this.registerUser1() }} text="submit" variant="action" />
                     </div>
                 </DynamicGrid.Region>
             </DynamicGrid>
@@ -405,13 +583,8 @@ class Main extends Component {
             }
             } required style={{ height: '35px', width: '400px', margin: '5px' }} />
             <ul>
-
                 <Button color="success" size="lg" onClick={() => { this.fetchBlockchainCustom() }} text="Search" variant="action" style={{ margin: 'auto', float: 'right', position: 'relative' }} />
-
             </ul>
-
-
-
         </div>
 
         const customSearch = Object.entries(this.state.contextResponseKeys).map(key =>
@@ -434,11 +607,12 @@ class Main extends Component {
          * View the querid Data
          */
         const viewQueriedData = Object.entries(this.state.queryResponce).map(key => <div>
-            <Table isStriped={false}>
+                <Table isStriped={false}>
                 <Table.Header>
                     <Table.HeaderCell content="Key" key="NAME" minWidth="small" />
                     <Table.HeaderCell content="Value" key="ADDRESS" minWidth="medium" />
                 </Table.Header>
+ 
                 <Table.SingleSelectableRows /**Update Function Comes here */>
                     <Table.Row key="PERSON_0">
                         <Table.Cell content={key[0]} key="NAME" />
@@ -457,7 +631,7 @@ class Main extends Component {
                             <Select
                                 value={this.state.selectedContext}
                                 onChange={(selectedContext) => { this.setState({ selectedContext }) }}
-                                options={this.state.contextNameRecived} />
+                                options={this.state.contextNameReciveds} />
                         </div>
                     </ul>
                 </DynamicGrid.Region>
@@ -470,13 +644,9 @@ class Main extends Component {
                 </DynamicGrid.Region>
                 <DynamicGrid.Region defaultPosition={region2}>
                     {queryPageSelectkey}
-
-
                 </DynamicGrid.Region>
                 <DynamicGrid.Region defaultPosition={region4}>
-
                     {viewQueriedData}
-
                 </DynamicGrid.Region>
             </DynamicGrid>
         </div>

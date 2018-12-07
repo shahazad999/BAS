@@ -2,8 +2,8 @@
     "hostIP": "localhost",
     "port": "4000",
     "channelName": "mychannel",
-    "chaincodeName": "pcr", 
-    "chaincodePath": "github.com/bas2",
+    "chaincodeName": "bas", 
+    "chaincodePath": "github.com/blockchain/blockasservice/go",
     "peerName": "peer0.org1.example.com",
     "authToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjM2MDAwMDAwMTU0NDE5MTkwMCwidXNlcm5hbWUiOiJDZXJuZXIiLCJvcmdOYW1lIjoiT3JnMSIsImlhdCI6MTU0NDA5MTg5NX0.Alg1Z0Iehnlz1eFD98RiI-JB18Q5cqst90VHd04cXUU"
 }
