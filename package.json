@@ -21,7 +21,8 @@
     "terra-form-textarea": "^2.33.1",
     "terra-icon": "^2.29.1",
     "terra-image": "^2.28.0",
-    "terra-layout": "^2.18.0"
+    "terra-layout": "^2.18.0",
+    "terra-table": "^2.31.1"
   },
   "scripts": {
     "start": "react-scripts start",

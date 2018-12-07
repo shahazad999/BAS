@@ -3,6 +3,7 @@
     "port": "4000",
     "channelName": "mychannel",
     "chaincodeName": "pcr", 
-    "chaincodePath": "github.com/BASnew",
-    "authToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjM2MDE1NDIzNjAxNjksInVzZXJuYW1lIjoiUGF5ZXIiLCJvcmdOYW1lIjoiT3JnMiIsImlhdCI6MTU0MjM2MDE2OX0.FzaNkJWmY1LsXpoMZqCOdE4nS8Vybz8YO1gcXJ7M-fc"
+    "chaincodePath": "github.com/bas2",
+    "peerName": "peer0.org1.example.com",
+    "authToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjM2MDAwMDAwMTU0NDE5MTkwMCwidXNlcm5hbWUiOiJDZXJuZXIiLCJvcmdOYW1lIjoiT3JnMSIsImlhdCI6MTU0NDA5MTg5NX0.Alg1Z0Iehnlz1eFD98RiI-JB18Q5cqst90VHd04cXUU"
 }

@@ -17,6 +17,7 @@ import IconSearch from 'terra-icon/lib/icon/IconSearch';
 import './App.css';
 import netConfig from './config';
 import InputField from 'terra-form-input/lib/InputField';
+import Table from 'terra-table';
 
 
 import Channel from './createChannel';
@@ -51,9 +52,9 @@ class Main extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            url: '', urlResponce: '', context: '', queryResponce: '',
+            url: '', urlResponce: '', context: '', queryResponce: {"key1": "value1", "key2": "value2"}, associateID: "", password: "",
             inputData: '', jsonData: '', selectedKeysForInvoke: [], test: 'Long live the King', keyValue: '',
-            hash: '', selectedContext: { value: 'abc', label: 'Context' }, context2: [
+            hash: '', selectedContext: { value: 'abc', label: 'Context' }, contextNameRecived: [
                 { value: 'abc1', label: 'Contex1' },
                 { value: 'abc2', label: 'Context2' },
                 { value: 'abc3', label: 'Context3' }
@@ -61,10 +62,11 @@ class Main extends Component {
                 { value: 'Key1', label: 'Key1' },
                 { value: 'Key2', label: 'Key2' },
                 { value: 'Key3', label: 'Key3' }
-            ], selectedkey: {}, contextName: '', regRePasswordVerify: false,
+            ], selectedkey: null, contextName: '', regRePasswordVerify: false, testing: [],
             isRegisterPage: false, isLoginPage: true, isQueryPage: false, isInvokePage: false,
             regAssociateID: '', regPassword: '', regRePassword: '', regDepartment: '', regContext: '', selectedKeysForInvoke: [],
         }
+        this.onLoginClick = this.onLoginClick.bind(this);
     };
     /*****************************
      * Fetches data from the URL
@@ -89,25 +91,48 @@ class Main extends Component {
      * Fetch User Details form Blockchain
      */
     onLoginClick() {
+        const {associateID} =this.state;
         let config = {
             method: 'GET',
             headers: {
-                'authorization': 'Bearer ' + this.state.auth,
+                'authorization': 'Bearer ' + netConfig.authToken,
                 'content-Type': 'application/json'
 
             },
         }
-        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22_rev%5C%22:%5C%22' + this.state.hash + '%5C%22,%5C%22payerId%5C%22:%5C%22' + this.state.username + '%5C%22%7D%7D%22%5D', config)
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22username%5C%22:%5C%22' +associateID+ '%5C%22%7D%7D%22%5D', config)
             .then(response => response.json())
             .then(response => {
-                if (response.password === this.state.password) {
-                    Object.entries(response.keys).map(key => {
-                        var contextObject = new Object();
-                        contextObject.value = key[1];
-                        contextObject.label = key[1];
-                        this.setState({ contextResponseKeys: contextObject })
+                //if (response.password === this.state.password) 
+                {
+/*                     Object.entries(response.keys).map(key => {
+                        var contextKeysObject = new Object();
+                        
+                        contextKeysObject.value = key[1];
+                        contextKeysObject.label = key[1];
+                        const x = [];
+                        x.push(contextKeysObject);
+                        this.setState({ contextResponseKeysSelect: x ,  isInvokePage: false, isLoginPage: false, isQueryPage: true,isRegisterPage: false })
+                        
+
+                    }) */
+                    const  contextResponseKeys  = response.keys;
+                    const result = new Array(contextResponseKeys.length);
+                    for (var i= 0; i <result.length; i++){
+                        result[i]= {
+                            value: contextResponseKeys[i],
+                            label: contextResponseKeys[i]
+                        }
+                        this.setState({ contextResponseKeysSelect: result ,  isInvokePage: false, isLoginPage: false, isQueryPage: true,isRegisterPage: false })
+                    }
+
+                    Object.entries(response.contexts).map(key => {
+                        var contextNamesObject =new Object()
+                        contextNamesObject.value = key[1];
+                        contextNamesObject.label = key[1];
+                        this.setState({ selectedContext: contextNamesObject, isInvokePage: false, isLoginPage: false, isQueryPage: true,isRegisterPage: false })
                     })
-                    this.setState({ isInvokePage: true, isLoginPage: false, contextResponseKeys: response.keys })
+
                 }
             })
     }
@@ -120,12 +145,12 @@ class Main extends Component {
         let config = {
             method: 'GET',
             headers: {
-                'authorization': 'Bearer ' + this.state.auth,
+                'authorization': 'Bearer ' + netConfig.authToken,
                 'content-Type': 'application/json'
 
             },
         }
-        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22_rev%5C%22:%5C%22' + this.state.hash + '%5C%22,%5C%22payerId%5C%22:%5C%22' + this.state.username + '%5C%22%7D%7D%22%5D', config)
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22_rev%5C%22:%5C%22' + this.state.hash + '%5C%22%7D%7D%22%5D', config)
             .then(response => response.json())
             .then((response) => this.setState({ 'queryResponce': response }));
     }
@@ -133,12 +158,12 @@ class Main extends Component {
         let config = {
             method: 'GET',
             headers: {
-                'authorization': 'Bearer ' + this.state.auth,
+                'authorization': 'Bearer ' + netConfig.authToken,
                 'content-Type': 'application/json'
 
             },
         }
-        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22' + this.state.contextResponseKeysSelect.key + '%5C%22:%5C%22' + this.state.hash + '%5C%22,%5C%22payerId%5C%22:%5C%22' + this.state.username + '%5C%22%7D%7D%22%5D', config)
+        fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/chaincodes/' + netConfig.chaincodeName + '?peer=' + netConfig.peerName + '&fcn=queryCustom&args=%5B%22%7B%5C%22selector%5C%22:%7B%5C%22' + this.state.contextResponseKeysSelect.value + '%5C%22:%5C%22' + this.state.keyValue + '%5C%22,%5C%22payerId%5C%22:%5C%22' + this.state.username + '%5C%22%7D%7D%22%5D', config)
             .then(response => response.json())
             .then((response) => this.setState({ 'queryResponce': response }));
     }
@@ -152,7 +177,7 @@ class Main extends Component {
         let config = {
             method: 'POST',
             headers: {
-                'authorization': 'Bearer ' + this.state.auth,
+                'authorization': 'Bearer ' + netConfig.authToken,
                 'content-Type': 'application/json'
             },
             body: '{ "peers": ["peer0.org1.example.com","peer0.org2.example.com"], "fcn":"initLedger", "args":[' + j + ']}'
@@ -198,18 +223,16 @@ class Main extends Component {
                         <Card.Body>
                             <h1>LOGIN</h1>
                             <ul>
-                                <Input type="text" placeholder="AssociateID" value={this.state.username} onChange={this.handleChangeUsername} required style={{ height: '35px', margin: '5px' }} />
+                                <Input type="text" placeholder="AssociateID" value={this.state.associateID} onChange={(e) => { this.setState({associateID: e.target.value})}} required style={{ height: '35px', margin: '5px' }} />
                             </ul>
                             <ul>
-                                <Input type="password" placeholder="Password" value={this.state.password} onChange={this.handleChangePassword} required style={{ height: '35px', margin: '5px' }} />
+                                <Input type="password" placeholder="Password" value={this.state.password} onChange={(e) => { this.setState({password: e.target.value})}} required style={{ height: '35px', margin: '5px' }} />
                             </ul>
                             <div style={{ margin: 'auto', textAlign: 'center' }}>
-                                <Button onClick={() => {
-                                    this.setState({ isQueryPage: true, isInvokePage: false, isLoginPage: false, isRegisterPage: false })
-                                }} text="Login" icon={<IconPadlock />} variant="action" style={{ margin: 'auto' }} />
+                                <Button onClick={ this.onLoginClick}text="Login" icon={<IconPadlock />} variant="action" style={{ margin: 'auto' }} />
                                 <Button onClick={() => {
                                     this.setState({ isQueryPage: false, isInvokePage: false, isLoginPage: false, isRegisterPage: true })
-                                }} text="Register" icon={<IconEdit />} variant="emphasis" style={{ margin: '6px' }} />
+                                }}  text="Register" icon={<IconEdit />} variant="emphasis" style={{ margin: '6px' }} />
                             </div>
                         </Card.Body>
                     </Card>
@@ -262,6 +285,22 @@ class Main extends Component {
 
         const navPage = <div>
             {Header}
+            {this.state.contextResponseKeys}
+            {JSON.stringify(this.state.contextResponseKeysSelect)}
+            <Button onClick={() => {
+                                const { contextResponseKeys } = this.state;
+                                const result = new Array(contextResponseKeys.length);
+                                for (var i= 0; i <result.length; i++){
+                                    result[i]= {
+                                        value: contextResponseKeys[i],
+                                        label: contextResponseKeys[i]
+                                    }
+                                    this.setState({testing: result})
+                                }
+                            }} text="Register" icon={<IconEdit />} variant="emphasis" style={{ margin: '6px' }} />
+                            {JSON.stringify(this.state.testing)}
+                        
+
 
         </div>
 
@@ -309,7 +348,9 @@ class Main extends Component {
                 </React.Fragment>
             </div>
         )
-
+        const { regDepartment, regAssociateID, regPassword, regContext, selectedKeysForInvoke } = this.state;
+        var j = ['"' + regDepartment + '"', '"' + regAssociateID + '"', '"' + regPassword + '"', '"' + regContext + '"', '"' + selectedKeysForInvoke + '"'];
+        var x = JSON.stringify(j)
         //Main Invoke Page
         const invokePage = <div>
             <DynamicGrid defaultTemplate={template}>
@@ -329,6 +370,7 @@ class Main extends Component {
                         <ul>
                             <Input type="text" placeholder="Context" value={this.state.regContext} onChange={(e) => { this.setState({ regContext: e.target.value }) }} required style={{ height: '35px', width: '400px', margin: '5px' }} />
                         </ul>
+                        {x}
                         <Button color="success" size="lg" onClick={() => { this.instantiate() }} text="submit" variant="action" />
                     </div>
                 </DynamicGrid.Region>
@@ -364,7 +406,7 @@ class Main extends Component {
             } required style={{ height: '35px', width: '400px', margin: '5px' }} />
             <ul>
 
-                <Button color="success" size="lg" onClick={() => { this.queryBlockchain() }} text="Search" variant="action" style={{ margin: 'auto', float: 'right', position: 'relative' }} />
+                <Button color="success" size="lg" onClick={() => { this.fetchBlockchainCustom() }} text="Search" variant="action" style={{ margin: 'auto', float: 'right', position: 'relative' }} />
 
             </ul>
 
@@ -388,10 +430,23 @@ class Main extends Component {
         const queryPageleft = <div>
             <Input type="text" placeholder="Hash" value={this.state.hash} onChange={(e) => { this.setState({ hash: e.target.value }) }} required style={{ height: '35px', width: '400px', margin: '5px' }} />
         </div>
-        const viewQueriedData = <div>
-            <Textarea size="full" type="json" placeholder="Recived Data in JSON format" value={JSON.stringify(this.state.queryResponce)} onChange={(e) => { this.setState({ queryResponce: e.target.value }) }} style={{ height: '200px', width: '400px', margin: '5px' }} />
-
-        </div>
+        /**
+         * View the querid Data
+         */
+        const viewQueriedData = Object.entries(this.state.queryResponce).map(key => <div>
+            <Table isStriped={false}>
+                <Table.Header>
+                    <Table.HeaderCell content="Key" key="NAME" minWidth="small" />
+                    <Table.HeaderCell content="Value" key="ADDRESS" minWidth="medium" />
+                </Table.Header>
+                <Table.SingleSelectableRows /**Update Function Comes here */>
+                    <Table.Row key="PERSON_0">
+                        <Table.Cell content={key[0]} key="NAME" />
+                        <Table.Cell content={JSON.stringify(key[1])} key="ADDRESS" />
+                      </Table.Row>
+                </Table.SingleSelectableRows>
+            </Table>
+        </div>)
 
         const queryPage = <div >
             <DynamicGrid defaultTemplate={template}>
@@ -402,14 +457,14 @@ class Main extends Component {
                             <Select
                                 value={this.state.selectedContext}
                                 onChange={(selectedContext) => { this.setState({ selectedContext }) }}
-                                options={this.state.context2} />
+                                options={this.state.contextNameRecived} />
                         </div>
                     </ul>
                 </DynamicGrid.Region>
                 <DynamicGrid.Region defaultPosition={region1}>
                     {queryPageleft}
                     <ul>
-                        <Button color="success" size="lg" onClick={() => { this.queryBlockchain() }} text="Search" variant="action" style={{ margin: 'auto', float: 'right', position: 'relative' }} />
+                        <Button color="success" size="lg" onClick={() => { this.fetchBlockchainHash() }} text="Search" variant="action" style={{ margin: 'auto', float: 'right', position: 'relative' }} />
 
                     </ul>
                 </DynamicGrid.Region>
@@ -439,6 +494,7 @@ class Main extends Component {
         return (
             <div className="Animation-enter.Animation-enter-active">
                 {result}
+                
             </div>
 
         );

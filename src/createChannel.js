@@ -26,8 +26,6 @@ class Channel extends Component {
             .then((response) => {
                 if (response.success === true) {
                     this.setState({ auth1: response.token })
-
-
                 }
                 this.registerUser2();
             }
@@ -38,12 +36,9 @@ class Channel extends Component {
             method: 'POST',
             headers: {
                 'content-Type': 'application/x-www-form-urlencoded'
-
             },
             body: 'username=Cerner&orgName=Org2'
         }
-
-
         fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/users', config)
             .then(response => response.json())
             .then((response) => {
@@ -57,34 +52,6 @@ class Channel extends Component {
             }
             );
     }
-    /*
-    craeteChannel() {
-        let config = {
-            method: 'POST',
-            headers: {
-              'authorization': 'Bearer '+this.state.auth1,
-              'content-Type': 'application/json'
-              
-            },
-            body: '{ "channelName": "'+netConfig.channelName+'", "channelConfigPath":"../artifacts/channel/mychannel.tx" }'
-                
-                
-           
-          }
-         
-      
-          fetch('http://localhost:4000' + '/channels', config)
-            .then(response =>  response.json() )
-            .then((response) => {
-                if (response.success === true){
-                    return true;
-                }
-
-    })
-
-    }*/
-
-
     craeteChannel() {
         //crearte channel
         let config = {
@@ -92,12 +59,8 @@ class Channel extends Component {
             headers: {
                 'authorization': 'Bearer ' + this.state.auth1,
                 'content-Type': 'application/json'
-
             },
             body: '{ "channelName": "' + netConfig.channelName + '", "channelConfigPath":"../artifacts/channel/mychannel.tx" }'
-
-
-
         }
 
 
@@ -111,7 +74,6 @@ class Channel extends Component {
                         headers: {
                             'authorization': 'Bearer ' + this.state.auth1,
                             'content-Type': 'application/json'
-
                         },
                         body: '{ "peers": ["peer0.org1.example.com","peer1.org1.example.com"] }'
                     }
@@ -127,12 +89,9 @@ class Channel extends Component {
                                     headers: {
                                         'authorization': 'Bearer ' + this.state.auth2,
                                         'content-Type': 'application/json'
-
                                     },
                                     body: '{ "peers": ["peer0.org2.example.com","peer1.org2.example.com"] }'
                                 }
-
-
                                 fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/channels/' + netConfig.channelName + '/peers', config)
                                     .then(response => response.json())
                                     .then((response) => {
@@ -147,7 +106,6 @@ class Channel extends Component {
                                                 },
                                                 body: '{ "peers": ["peer0.org2.example.com","peer1.org2.example.com"], "chaincodeName":"' + netConfig.chaincodeName + '", "chaincodePath":"' + netConfig.chaincodePath + '","chaincodeType": "golang","chaincodeVersion":"v1" }'
                                             }
-
                                             //install chaincode org1
                                             fetch('http://' + netConfig.hostIP + ':' + netConfig.port + '' + '/chaincodes', config)
                                                 .then(response => response.json())
@@ -172,10 +130,8 @@ class Channel extends Component {
                                                                         headers: {
                                                                             'authorization': 'Bearer ' + this.state.auth1,
                                                                             'content-Type': 'application/json'
-
                                                                         },
                                                                         body: '{"chaincodeName": "' + netConfig.chaincodeName + '", "chaincodeVersion":"v1", "chaincodeType": "golang", "args":[""] }'
-
                                                                     }
 
 
@@ -185,40 +141,18 @@ class Channel extends Component {
                                                                             if (response.success === true) {
                                                                                 this.setState({ message: "Successfully instantiate chaingcode in organization Org1 to the channel 'mychannel'" })
                                                                                 this.setState({ message: response.message })
-
-
-
                                                                             }
-
                                                                         });
-
-
-
                                                                 }
                                                             });
-
-
-
                                                     }
                                                 });
-
-
-
                                         }
                                     });
-
-
-
                             }
                         });
-
-
-
                 }
-
-            }
-            );
-
+            });
     }
     instantiate() {
         let config = {
@@ -252,7 +186,22 @@ class Channel extends Component {
 
     render() {
         return (
-            this.registerUser1()
+            <div>
+            <Button color="success" size="lg" onClick={() => { this.registerUser1()}} text="CreateChannel" variant="action" style={{ margin: '5px'}} />
+  <ul>
+   AUTH 1: 
+   {this.state.auth1}
+   </ul>
+   <ul>
+   AUTH 2:
+   {this.state.auth2}
+   </ul>
+   
+   <ul>
+   Message: 
+   {this.state.message}
+   </ul>  
+   </div>
         );
     }
 }
